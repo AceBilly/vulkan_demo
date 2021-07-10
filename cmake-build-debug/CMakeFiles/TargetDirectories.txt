@@ -1,3 +1,0 @@
-/root/codes/cpp/vulkan_demo/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/root/codes/cpp/vulkan_demo/cmake-build-debug/CMakeFiles/edit_cache.dir
-/root/codes/cpp/vulkan_demo/cmake-build-debug/CMakeFiles/vulkan_demo.dir

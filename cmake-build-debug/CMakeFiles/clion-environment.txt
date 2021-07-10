@@ -1,4 +1,0 @@
-ToolSet: Ubuntu 20.04.2 LTS (local)@D:\ProgramData\WSL\Ubuntu_2004.2020.424.0_x64\ubuntu2004.exe
-Options: 
-
-Options:

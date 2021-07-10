@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/vulkan_demo.dir/src/VulkanApplication.cpp.o CMakeFiles/vulkan_demo.dir/src/main.cpp.o  -o vulkan_demo  -lglfw -lvulkan 
