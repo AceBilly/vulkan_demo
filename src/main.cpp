@@ -1,9 +1,9 @@
 #include <iostream>
 #include <exception>
+#include <string>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+
 
 #include "../inc/glm/glm.hpp"
 #include "../inc/glm/gtc/matrix_transform.hpp"
@@ -14,6 +14,24 @@
 
 constinit int windowWidth = 800;
 constinit int windowHeight = 800;
+
+constinit float lineSegment[] = {1.0f, 1.0f,
+                                 50.0f, 50.0f
+                                 };
+
+const char* vertexShaderSrc  = "#version 460 core\n"
+                                  "layout (location = 0) in vec3 aPos\n"
+                                  "void main()\n"
+                                  "{\n"
+                                  "gl_Position = vec4(aPos.x, aPos.y, 1.0, 1.0\n"
+                                  "}\0";
+const char* fragShaderSrc = "#version 460 core\n"
+                                  "out vec4 FragColor;\n"
+                                  "\n"
+                                  "void main()\n"
+                                  "{\n"
+                                  "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+                                  "}\0";
 
 void initialize_glfw() {
     // 初始化glfw
@@ -40,12 +58,40 @@ void init() {
     glClearColor(0.0, 0.0, 1.0, 0.0);
     glViewport(0, 0, windowWidth, windowHeight);
     glm::ortho(0.0f, 100.0f, 0.0f, 100.0f, 0.0f, 0.0f);
+
+
+
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSrc, nullptr);
+    glCompileShader(vertexShader);
+
+    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragShaderSrc, nullptr);
+    glCompileShader(fragmentShader);
+
+    unsigned int shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, vertexShader);
+    glLinkProgram(shaderProgram);
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    unsigned int VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(lineSegment), lineSegment, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(0));
+    glEnableVertexAttribArray(0);
+    glUseProgram(shaderProgram);
+
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);
 }
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
-    glColorP3ui
-
 }
 
 void loop(GLFWwindow *p_window) {
