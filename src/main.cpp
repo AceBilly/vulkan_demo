@@ -3,12 +3,13 @@
 #include <string>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#define __has_builtin(__builtin_source_location) true
+
+//#define __has_builtin(__builtin_source_location) true
+
 #include <source_location>
-#include <math.h>
+#include <cmath>
 
 #include "Shader.h"
-
 
 
 constinit int windowWidth = 800;
@@ -17,29 +18,14 @@ constinit int windowHeight = 800;
 
 constinit float lineSegment[] = {0.0f, 0.0f,
                                  0.5f, 0.5f,
-                                 0.0f,  0.5f,
+                                 0.0f, 0.5f,
                                  0.5f, 0.0f
 };
 constinit uint indices[] = {
-       2, 1, 0,
-       0, 1, 3
+        2, 1, 0,
+        0, 1, 3
 };
-
-const char *vertexShaderSrc = "#version 450 core\n"
-                              "layout (location = 0) in vec2 aPos;\n"
-                              "\n"
-                              "void main()\n"
-                              "{\n"
-                              "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
-                              "}\0";
-const char *fragShaderSrc = "#version 450 core\n"
-                            "out vec4 FragColor;\n"
-                            "uniform vec4 color;\n"
-                            "\n"
-                            "void main()\n"
-                            "{\n"
-                            "    FragColor = color;\n"
-                            "}\0";
+float colorVariables[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 
 void initialize_glfw() {
     // 初始化glfw
@@ -64,57 +50,16 @@ GLFWwindow *createWindow(const int winWidth, const int winHeight) {
 }
 
 struct Data {
-    unsigned int m_programId;
+    Ace::Shader &m_shader;
     unsigned int m_VAO;
     unsigned int m_EBO;
 };
-
-void handleError(unsigned int id, bool flag = true, const std::source_location location = std::source_location::current()) {
-    int success;
-    char infoLog[512];
-    if (flag) {
-        glGetShaderiv(id, GL_COMPILE_STATUS, &success);
-    } else {
-        glGetProgramiv(id, GL_LINK_STATUS, &success);
-    }
-    if (!success) {
-        std::cout << "file_name: " << location.file_name() << '\n'
-                  << "function: " << location.function_name() << '\n'
-                  << "line: " << location.line() << '\n';
-        if(flag) {
-            glGetShaderInfoLog(id, 512, nullptr, infoLog);
-            std::cout << "Error:Shader vertex compilation_failed " << infoLog << std::endl;
-        } else {
-            glGetProgramInfoLog(id, 512, nullptr, infoLog);
-            std::cout << "Error::program link failed " << infoLog << std::endl;
-        }
-    }
-}
 
 Data init() {
     // 设置背景色
     glClearColor(0.0, 1.0, 1.0, 0.0);
     glViewport(0, 0, windowWidth, windowHeight);
-//    glm::ortho(0.0f, 100.0f, 0.0f, 100.0f, 0.0f, 0.0f);
-// 编译顶点着色器
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSrc, nullptr);
-    glCompileShader(vertexShader);
-    handleError(vertexShader);
-// 编译片段着色器源码
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragShaderSrc, nullptr);
-    glCompileShader(fragmentShader);
-    handleError(fragmentShader);
-// 链接到着色器程序
-    unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    handleError(shaderProgram, false);
-// 释放着色器资源
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    Ace::Shader shader("shader/vertexShader.glsl", "shader/fragmentShader.glsl");
     // 顶点数组对象
     unsigned int VAO = 0;
     glGenVertexArrays(1, &VAO);
@@ -132,22 +77,23 @@ Data init() {
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glUseProgram(shaderProgram);
+    shader.use();
     glClear(GL_COLOR_BUFFER_BIT);
-    return Data{.m_programId=shaderProgram, .m_VAO=VAO, .m_EBO=EBO};
+    return Data{.m_shader=shader, .m_VAO=VAO, .m_EBO=EBO};
 }
 
 void loop(GLFWwindow *p_window) {
-
-    auto[shaderProgram, VAO, EBO] = init();
+    std::string var("color");
+    auto[shader, VAO, EBO] = init();
     while (!glfwWindowShouldClose(p_window)) {
-        int uniformVarLocation = glGetUniformLocation(shaderProgram, "color");
-        glUseProgram(shaderProgram);
+
+
         float runTime = glfwGetTime();
         float blue = (sin(runTime) / 2.0f) + 0.5f;
-        glUniform4f(uniformVarLocation, 0.1f, 0.2, blue, 1.0f);
-
+        shader.setValue("pos", blue);
+        colorVariables[2] = blue;
+        shader.setValue(var, colorVariables);
+        shader.use();
         glBindVertexArray(VAO);
         glLineWidth(8);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);

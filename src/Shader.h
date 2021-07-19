@@ -8,7 +8,8 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
-
+#include <map>
+//#include <boost/filesystem.hpp>
 #include <glad/glad.h>
 
 namespace Ace {
@@ -16,20 +17,20 @@ namespace Ace {
 
     class Shader {
     public:
-        Shader(fs::path vertexShader, fs::path fragShader);
-
+        Shader(const fs::path& vertexShader, const fs::path& fragShader);
         ~Shader() {}
-
+    public:
+        void setValue(const std::string& var, float value1);
+        void setValue(const std::string& var, float (&value)[4]);
     public:
         void use() const {
             glUseProgram(m_id);
         }
 
-        const uint getId() const { return m_id; }
+        [[nodiscard]] const uint getId() const { return m_id; }
 
     private:
-        uint m_id;  // shader program id;
-
+        int m_id;  // shader program id;
     };
 }
 
