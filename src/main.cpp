@@ -60,6 +60,7 @@ Data init() {
     glClearColor(0.0, 1.0, 1.0, 0.0);
     glViewport(0, 0, windowWidth, windowHeight);
     Ace::Shader shader("shader/vertexShader.glsl", "shader/fragmentShader.glsl");
+    shader.getVariables("config/variablesLocation.json");
     // 顶点数组对象
     unsigned int VAO = 0;
     glGenVertexArrays(1, &VAO);
@@ -90,9 +91,10 @@ void loop(GLFWwindow *p_window) {
 
         float runTime = glfwGetTime();
         float blue = (sin(runTime) / 2.0f) + 0.5f;
-        shader.setValue("pos", blue);
         colorVariables[2] = blue;
         shader.setValue(var, colorVariables);
+        int location = glGetUniformLocation(shader.getId(), "color");
+
         shader.use();
         glBindVertexArray(VAO);
         glLineWidth(8);

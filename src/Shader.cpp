@@ -5,7 +5,11 @@
 #include "Shader.h"
 #include "Error.h"
 
-#include <string>
+#include <vector>
+#include <rapidjson/rapidjson.h>
+#include <rapidjson/document.h>
+
+using namespace std::string_literals;
 
 // readfile
 // \param filePath 文件路径
@@ -25,8 +29,7 @@ std::string readFile(const Ace::fs::path &filePath) {
     } catch (std::exception &e) {
         std::cout << "failed read file: " << e.what() << std::endl;
     }
-
-
+    return ""s;
 }
 
 // 从文件中读取着色器源码 并编译 最后释放着色器资源
@@ -36,6 +39,7 @@ Ace::Shader::Shader(const fs::path &vertexShader, const fs::path &fragShader) {
     // 读取文件 待优化
     std::string fragShaderCodeStr = readFile(fragShader);
     std::string vertexShaderCodeStr = readFile(vertexShader);
+
     const char *vertexShaderCode = vertexShaderCodeStr.c_str();
     const char *fragShaderCode = fragShaderCodeStr.c_str();
 
@@ -59,17 +63,50 @@ Ace::Shader::Shader(const fs::path &vertexShader, const fs::path &fragShader) {
     glDeleteShader(fragmentId);
 }
 
+void Ace::Shader::getVariables(const fs::path &shaderPath) {
+    if (fs::exists(shaderPath)) {
+        std::string shaderSrc = readFile(shaderPath);
+
+        rapidjson::Document document;
+        document.Parse(shaderSrc.c_str());
+
+        for (auto &entry : document.GetObject()) {
+
+            std::string variablesName = entry.name.GetString();
+            int location = entry.value.GetInt();
+//            m_variables.insert(std::make_pair(variablesName, location));
+            m_variables[variablesName] = location;
+        }
+
+    }
+}
+
+void Ace::Shader::setValue(const std::string &varName, std::initializer_list<float> vec4) {
+    if (vec4.size() == 4) {
+        auto begin = vec4.begin();
+        glUniform4f(m_variables.at(varName), *(begin), *(++begin), *(++begin), *(++begin));
+    } else
+        std::cerr << "please ensure your data is right";
+
+}
 
 void Ace::Shader::setValue(const std::string &var, float value1) {
 //    glUniform1f(glGetUniformLocation(m_id, var.c_str()), value1);
     int location = glGetUniformLocation(m_id, var.c_str());
-
     glUniform1f(location, value1);
 }
 
+// TODO(AceBilly) 无法查询变量位置
 void Ace::Shader::setValue(const std::string &var, float (&values)[4]) {
-    int location = glGetUniformLocation(m_id, var.c_str());
-    auto [v1, v2, v3, v4] = values;
+//    int location = glGetUniformLocation(m_id, var.c_str());
+    auto[v1, v2, v3, v4] = values;
+    for (const auto &pair : m_variables) {
+        const std::string variableName = pair.first;
+        std::cout << variableName;
+    }
+    std::string var1("test");
+    std::string &var1_ref = var1;
+    int location = m_variables.at(var1_ref);
 //    int location = 2;
     glUniform4f(location, v1, v2, v3, v4);
 }
