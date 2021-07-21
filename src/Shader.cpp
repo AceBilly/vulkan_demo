@@ -64,20 +64,27 @@ Ace::Shader::Shader(const fs::path &vertexShader, const fs::path &fragShader) {
 }
 
 void Ace::Shader::getVariables(const fs::path &shaderPath) {
-    if (fs::exists(shaderPath)) {
-        std::string shaderSrc = readFile(shaderPath);
+    try {
 
-        rapidjson::Document document;
-        document.Parse(shaderSrc.c_str());
+        if (fs::exists(shaderPath)) {
+            std::string shaderSrc = readFile(shaderPath);
 
-        for (auto &entry : document.GetObject()) {
+            rapidjson::Document document;
+            document.Parse(shaderSrc.c_str());
 
-            std::string variablesName = entry.name.GetString();
-            int location = entry.value.GetInt();
+            for (auto &entry : document.GetObject()) {
+
+                // 这个string是key，
+                std::string variablesName = entry.name.GetString();
+                int location = entry.value.GetInt();
 //            m_variables.insert(std::make_pair(variablesName, location));
-            m_variables[variablesName] = location;
-        }
 
+//                m_variables.insert({variablesName, location});
+                m_variables[variablesName] = location;
+            }
+        }
+    } catch (std::exception &e) {
+        std::cout << "map failed: " << e.what() << std::endl;
     }
 }
 
@@ -92,21 +99,19 @@ void Ace::Shader::setValue(const std::string &varName, std::initializer_list<flo
 
 void Ace::Shader::setValue(const std::string &var, float value1) {
 //    glUniform1f(glGetUniformLocation(m_id, var.c_str()), value1);
-    int location = glGetUniformLocation(m_id, var.c_str());
+//    int location = glGetUniformLocation(m_id, var.c_str());
+    int location = m_variables.at(var);
     glUniform1f(location, value1);
 }
 
 // TODO(AceBilly) 无法查询变量位置
 void Ace::Shader::setValue(const std::string &var, float (&values)[4]) {
 //    int location = glGetUniformLocation(m_id, var.c_str());
-    auto[v1, v2, v3, v4] = values;
-    for (const auto &pair : m_variables) {
-        const std::string variableName = pair.first;
-        std::cout << variableName;
+    try {
+        auto[v1, v2, v3, v4] = values;
+        int location = m_variables.at(var);
+        glUniform4f(location, v1, v2, v3, v4);
+    } catch (std::exception &e) {
+        std::cout << "failed 121: " << e.what() << std::endl;
     }
-    std::string var1("test");
-    std::string &var1_ref = var1;
-    int location = m_variables.at(var1_ref);
-//    int location = 2;
-    glUniform4f(location, v1, v2, v3, v4);
 }

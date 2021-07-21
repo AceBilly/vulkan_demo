@@ -17,23 +17,6 @@
 
 namespace Ace {
     namespace fs = std::filesystem;
-    struct StringCompare {
-        using result_type = bool;
-        using first_argument_type = std::string;
-        using second_argument_type = std::string;
-
-        bool operator()(const std::string& lhs, const std::string& rhs)const {
-            if (lhs.size() == rhs.size()) {
-                for (unsigned int i = 0; i < lhs.size(); ++i) {
-                    if (lhs[i] != rhs[i]) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            return false;
-        }
-    };
     class Shader {
     public:
         Shader(const fs::path &vertexShader, const fs::path &fragShader);
@@ -60,8 +43,8 @@ namespace Ace {
         [[nodiscard]] const uint getId() const { return m_id; }
 
     private:
-        int m_id;  // shader program id;
-        std::map<std::string, int, StringCompare> m_variables;
+        int m_id;  // shader program id;:
+        std::map<std::string, int> m_variables;
     };
 }
 

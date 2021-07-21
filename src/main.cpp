@@ -4,6 +4,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+
+#include "../inc/stb_image.h"
+
 //#define __has_builtin(__builtin_source_location) true
 
 #include <source_location>
@@ -16,16 +20,16 @@ constinit int windowWidth = 800;
 constinit int windowHeight = 800;
 
 
-constinit float lineSegment[] = {0.0f, 0.0f,
-                                 0.5f, 0.5f,
-                                 0.0f, 0.5f,
-                                 0.5f, 0.0f
+constinit float lineSegment[] = {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,// 左下
+                                 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,// 右上
+                                 0.0f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,// 左上
+                                 0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f// 右下
 };
 constinit uint indices[] = {
         2, 1, 0,
         0, 1, 3
 };
-float colorVariables[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+
 
 void initialize_glfw() {
     // 初始化glfw
@@ -50,9 +54,10 @@ GLFWwindow *createWindow(const int winWidth, const int winHeight) {
 }
 
 struct Data {
-    Ace::Shader &m_shader;
+    Ace::Shader m_shader;
     unsigned int m_VAO;
     unsigned int m_EBO;
+    unsigned int m_texId;
 };
 
 Data init() {
@@ -61,6 +66,24 @@ Data init() {
     glViewport(0, 0, windowWidth, windowHeight);
     Ace::Shader shader("shader/vertexShader.glsl", "shader/fragmentShader.glsl");
     shader.getVariables("config/variablesLocation.json");
+
+    // 纹理对象
+    int width, height, colorChannel;
+    unsigned char *imageData = stbi_load("Images/brick.png", &width, &height, &colorChannel, 0);
+    if (!imageData) {
+        throw std::runtime_error("failed load image");
+    }
+    unsigned int textureId;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(imageData);
+
     // 顶点数组对象
     unsigned int VAO = 0;
     glGenVertexArrays(1, &VAO);
@@ -71,8 +94,13 @@ Data init() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(lineSegment), lineSegment, GL_STATIC_DRAW);
     // 绑定属性指针
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *) (0));
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *) (0));
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *) (2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*) (5 * sizeof(float)));
+    glEnableVertexAttribArray(4);
+
     // 创建索引缓冲对象
     unsigned int EBO;
     glGenBuffers(1, &EBO);
@@ -80,29 +108,24 @@ Data init() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     shader.use();
     glClear(GL_COLOR_BUFFER_BIT);
-    return Data{.m_shader=shader, .m_VAO=VAO, .m_EBO=EBO};
+    return Data{.m_shader=shader, .m_VAO=VAO, .m_EBO=EBO, .m_texId = textureId};
 }
 
 void loop(GLFWwindow *p_window) {
-    std::string var("color");
-    auto[shader, VAO, EBO] = init();
+//    std::string var("color");
+    auto[shader, VAO, EBO, textureId] = init();
     while (!glfwWindowShouldClose(p_window)) {
-
-
         float runTime = glfwGetTime();
         float blue = (sin(runTime) / 2.0f) + 0.5f;
-        colorVariables[2] = blue;
-        shader.setValue(var, colorVariables);
-        int location = glGetUniformLocation(shader.getId(), "color");
 
         shader.use();
+        glBindTexture(GL_TEXTURE_2D, textureId);
         glBindVertexArray(VAO);
         glLineWidth(8);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glfwSwapBuffers(p_window);
         glfwPollEvents();
-
     }
 }
 
