@@ -13,6 +13,7 @@
 //#include <boost/filesystem.hpp>
 #include <glad/glad.h>
 #include <initializer_list>
+#include "Error.h"
 
 
 namespace Ace {

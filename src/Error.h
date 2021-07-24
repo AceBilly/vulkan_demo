@@ -16,6 +16,7 @@ namespace Ace {
     public:
         // 只处理编译Shader 和 链接程序额错误：暂时
         static void shaderError(unsigned int id, bool flag = true, const std::source_location location = std::source_location::current());
+        static void getOpenglError();
     };
 }
 

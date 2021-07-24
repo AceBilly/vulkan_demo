@@ -22,3 +22,36 @@ void Ace::Error::shaderError(unsigned int id, bool flag, const std::source_locat
         }
     }
 }
+
+void Ace::Error::getOpenglError() {
+    auto error_code = glGetError();
+    switch (error_code) {
+        case GL_NO_ERROR:
+            std::cout << "no error" << std::endl;
+            break;
+        case GL_INVALID_ENUM:
+            std::cerr << "error code not invalid" << '\n';
+            break;
+        case GL_INVALID_VALUE:
+            std::cerr << "invalid value" << std::endl;
+            break;
+        case GL_INVALID_OPERATION:
+            std::cerr << "invalid operation" << '\n';
+            break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+            std::cerr << "invalid framebuffer operation" << '\n';
+            break;
+        case GL_OUT_OF_MEMORY:
+            std::cerr << "out of memory" << '\n';
+            break;
+        case GL_STACK_UNDERFLOW:
+            std::cerr << "stack underlow" << '\n';
+            break;
+        case GL_STACK_OVERFLOW:
+            std::cerr << "stack overlow" << '\n';
+            break;
+        default:
+            std::cerr << "umatch emum value" << std::endl;
+            break;
+    }
+}

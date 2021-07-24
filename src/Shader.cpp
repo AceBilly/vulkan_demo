@@ -3,7 +3,7 @@
 //
 
 #include "Shader.h"
-#include "Error.h"
+
 
 #include <vector>
 #include <rapidjson/rapidjson.h>

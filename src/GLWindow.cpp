@@ -3,6 +3,7 @@
 //
 
 #include "GLWindow.h"
+#include "Error.h"
 
 void initialize_glfw() {
     // 初始化glfw
@@ -31,5 +32,57 @@ Ace::GLWindow::GLWindow(uint width, uint height, const std::string &winTitle) {
     initialize_glfw();
     createWindow(width, height, winTitle);
     initialize_glad();
+    glViewport(0, 0, width, height);
+}
+// 从文件中加载着色器 编译， 并且获得其中着色器变量的位置信息
+void Ace::GLWindow::loadShader(const Ace::fs::path &vertexShaderPath, const Ace::fs::path &fragShaderPath,
+                               const Ace::fs::path &variablesLocationConfig) {
+    mp_shader = std::make_unique<Ace::Shader>(vertexShaderPath, fragShaderPath);
+    mp_shader->getVariables(variablesLocationConfig);
+}
+
+void Ace::GLWindow::load2DTexture(const Ace::fs::path &texturePath) {
+    m_textures.push_back(std::make_shared<Ace::Texture>(texturePath));
+}
+
+void Ace::GLWindow::generateVao() {
+
+    glGenVertexArrays(1, &m_VAO);
+    glGenBuffers(1, &m_EBO);
+    glGenBuffers(1, &m_VBO);
+    glBindVertexArray(m_VAO);
+}
+
+
+
+
+void Ace::GLWindow::render() {
+    while (!glfwWindowShouldClose(m_window)) {
+
+        if (m_textures.size()) {
+            int count = 0;
+            for (auto& texture : m_textures) {
+                texture->bindTextures(count);
+                ++count;
+            }
+        }
+        if (mp_shader) {
+            mp_shader->use();
+        }
+
+        glBindVertexArray(m_VAO);
+        glLineWidth(8);
+        glDrawElements(GL_TRIANGLES, m_vertexCount, GL_UNSIGNED_BYTE, 0);
+
+        glfwSwapBuffers(m_window);
+        glfwPollEvents();
+        Ace::Error::getOpenglError();  // debug
+
+    }
+}
+
+void Ace::GLWindow::setBackgroundColor(float r, float g, float b, float a) {
+    glClearColor(r, g, b, a);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
