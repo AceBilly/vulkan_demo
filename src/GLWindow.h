@@ -47,12 +47,14 @@ namespace Ace {
                 return res;
             };
             int len  = calcLen();
+            glGenBuffers(1, &m_VBO);
             glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
             glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
             unsigned int offset = 0;
             for (auto[location, size] : locationAndSize) {
                 // TODO(AceBilly) Type not dect
-                glVertexAttribPointer(location, size, GL_FLOAT, GL_FALSE, len * sizeof(T), (void *) (offset));
+                glVertexAttribPointer(location, size, GL_FLOAT, GL_FALSE, len * sizeof(T), (void *) (offset * sizeof(T)));
+//                Ace::Error::getOpenglError();
                 offset += size;
                 glEnableVertexAttribArray(location);
             }
@@ -62,6 +64,7 @@ namespace Ace {
         requires std::is_signed<T>::value || std::is_unsigned<T>::value
         void generateEBO(T (&indices)[N]) {
             m_vertexCount = N;
+            glGenBuffers(1, &m_EBO);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
         }

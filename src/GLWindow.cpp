@@ -48,8 +48,8 @@ void Ace::GLWindow::load2DTexture(const Ace::fs::path &texturePath) {
 void Ace::GLWindow::generateVao() {
 
     glGenVertexArrays(1, &m_VAO);
-    glGenBuffers(1, &m_EBO);
-    glGenBuffers(1, &m_VBO);
+
+
     glBindVertexArray(m_VAO);
 }
 
@@ -68,15 +68,16 @@ void Ace::GLWindow::render() {
         }
         if (mp_shader) {
             mp_shader->use();
+            mp_shader->setValue("offset", 0.4f);
         }
 
         glBindVertexArray(m_VAO);
-        glLineWidth(8);
-        glDrawElements(GL_TRIANGLES, m_vertexCount, GL_UNSIGNED_BYTE, 0);
+//        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDrawElements(GL_TRIANGLES, m_vertexCount, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(m_window);
         glfwPollEvents();
-        Ace::Error::getOpenglError();  // debug
+//        Ace::Error::getOpenglError();  // debug
 
     }
 }
