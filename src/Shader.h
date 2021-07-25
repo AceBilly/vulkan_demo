@@ -15,6 +15,10 @@
 #include <initializer_list>
 #include "Error.h"
 
+#include "../inc/glm/glm/glm.hpp"
+#include "../inc/glm/glm/gtc/matrix_transform.hpp"
+#include "../inc/glm/glm/gtc/type_ptr.hpp"
+
 
 namespace Ace {
     namespace fs = std::filesystem;
@@ -28,10 +32,12 @@ namespace Ace {
         // 出现不能查询到变量地址的问题
         // TODO(AceBilly) bug
         void setValue(const std::string &var, float value1);
+        void setValue(const std::string &var, int value);
 
         void setValue(const std::string& var, float (&value)[4]);
 
         void setValue(const std::string &varName, std::initializer_list<float> vec4);
+        void setValue(const std::string &varName, const glm::mat4 mat);
 
         // 需要指定变量位置的文件
         void getVariables(const fs::path &shaderPath);

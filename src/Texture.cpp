@@ -5,6 +5,7 @@
 #include "Texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+
 #include "../inc/stb_image.h"
 
 Ace::Texture::Texture() {
@@ -20,11 +21,13 @@ void Ace::Texture::setTextureParameter() {
 }
 
 void Ace::Texture::load2DTexture(const Ace::fs::path &texturePath) {
+    stbi_set_flip_vertically_on_load(true);
     unsigned char *imageData = stbi_load(texturePath.c_str(), &m_textureInfo.width, &m_textureInfo.height,
                                          &m_textureInfo.colorChannel, 0);
     if (!imageData)
         throw std::runtime_error("failed load texture");
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_textureInfo.width, m_textureInfo.height, 0, GL_RGB, GL_UNSIGNED_BYTE,
+    glTexImage2D(GL_TEXTURE_2D, 0, checkImageChannel(), m_textureInfo.width, m_textureInfo.height, 0,
+                 checkImageChannel(), GL_UNSIGNED_BYTE,
                  imageData);
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(imageData);
@@ -33,4 +36,15 @@ void Ace::Texture::load2DTexture(const Ace::fs::path &texturePath) {
 Ace::Texture::Texture(const Ace::fs::path &texturePath) : Texture() {
     setTextureParameter();
     load2DTexture(texturePath);
+}
+
+GLint Ace::Texture::checkImageChannel() const {
+    switch (m_textureInfo.colorChannel) {
+        case 3:
+            return GL_RGB;
+        case 4:
+            return GL_RGBA;
+        default:
+            return GL_RGB;
+    }
 }

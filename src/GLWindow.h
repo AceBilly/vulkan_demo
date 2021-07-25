@@ -15,6 +15,12 @@
 #include "Shader.h"
 #include "Texture.h"
 
+#include "../inc/glm/glm/glm.hpp"
+#include "../inc/glm/glm/gtc/matrix_transform.hpp"
+#include "../inc/glm/glm/gtc/type_ptr.hpp"
+
+
+
 namespace Ace {
     class GLWindow {
     public:
@@ -22,6 +28,8 @@ namespace Ace {
     public:
         GLWindow(uint width, uint height, const std::string &winTitle);
         ~GLWindow(){
+            glDeleteBuffers(1, &m_EBO);
+            glDeleteBuffers(1, &m_VBO);
             glfwTerminate();
         }
         void render();
@@ -71,6 +79,8 @@ namespace Ace {
 
         // 加载2D 纹理
         void load2DTexture(const Ace::fs::path &texturePath);
+        // \params texturePath 纹理路径位置， 在shader中变量的名字；
+        void load2DTexture(const Ace::fs::path &texturePath, const std::string& textureUniformName);
 
        // 编译卓着色器和uniform 变量位置的信息的json文件
         void loadShader(const Ace::fs::path &vertexShaderPath, const Ace::fs::path &fragShader,
@@ -79,10 +89,15 @@ namespace Ace {
     private:
         // 创建窗口
         void createWindow(uint width, uint height, const std::string &winTitle);
-
-
+        struct BackgroundColor{
+            float r;
+            float g;
+            float b;
+            float a;
+        };
+        void reFlashBuffer();
     private:
-
+        BackgroundColor m_background;
         window_t *m_window = nullptr;
         std::unique_ptr<Ace::Shader> mp_shader = nullptr;
         using texture_pt = std::shared_ptr<Ace::Texture>;

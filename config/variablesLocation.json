@@ -1,3 +1,6 @@
 {
-  "offset": 5
+  "offset": 5,
+  "cusTexture": 7,
+  "cusTexture1": 8,
+  "transform": 5
 }

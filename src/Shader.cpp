@@ -115,3 +115,21 @@ void Ace::Shader::setValue(const std::string &var, float (&values)[4]) {
         std::cout << "failed 121: " << e.what() << std::endl;
     }
 }
+
+void Ace::Shader::setValue(const std::string &var, int value) {
+    try {
+        int location = m_variables.at(var);
+        glUniform1i(location, value);
+    } catch(std::exception& e) {
+        std::cout << "failed : " << e.what() << '\n';
+    }
+}
+
+void Ace::Shader::setValue(const std::string &varName, const glm::mat4 mat) {
+    try {
+        int location = m_variables.at(varName);
+        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat));
+    } catch(std::exception& e) {
+        std::cerr << "failed : " << e.what() << '\n';
+    }
+}

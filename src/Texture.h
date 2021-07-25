@@ -19,17 +19,21 @@ namespace Ace {
     class Texture {
     public:
         Texture();
-        Texture(const Ace::fs::path &texturePath);
+        explicit Texture(const Ace::fs::path &texturePath);
+        ~Texture(){
+            glDeleteTextures(1, &m_textureId);
+        }
     public:
         // 设置纹理参数，如过滤模式，渐进模式
         void setTextureParameter();
-        void bindTextures(int count) {
+        void bindTextures(int count) const {
             glActiveTexture(GL_TEXTURE0 + count);
             glBindTexture(GL_TEXTURE_2D, m_textureId);
         }
     private:
         // 加载图片 -> 生成opengl纹理
         void load2DTexture(const Ace::fs::path& texturePath);
+        GLint checkImageChannel() const;
 
     private:
         unsigned int m_textureId;
