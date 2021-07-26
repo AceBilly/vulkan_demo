@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <initializer_list>
+#include <functional>
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -33,7 +34,8 @@ namespace Ace {
             glfwTerminate();
         }
         void render();
-
+    public:
+        void getWindowSize();
     public:
         void generateVao();
 
@@ -87,8 +89,14 @@ namespace Ace {
                         const Ace::fs::path &variablesLocationConfig);
 
     private:
+        // 处理外部输入事件
+        void processInput()const;
         // 创建窗口
         void createWindow(uint width, uint height, const std::string &winTitle);
+        // 用于更改窗口大小的时候的回调函数
+        // TODO 不能与类实例的变量同步
+        static void frameBuffer_size_callback(window_t *window, int width, int height);
+        // 储存颜色信息
         struct BackgroundColor{
             float r;
             float g;
@@ -104,6 +112,7 @@ namespace Ace {
         unsigned int m_EBO, m_VAO, m_VBO;
         std::vector<texture_pt> m_textures;
         unsigned int m_vertexCount = 0;
+        int m_windowHeight, m_windowWidth;
 
     };
 }  // namespace Ace;
